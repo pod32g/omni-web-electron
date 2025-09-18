@@ -42,8 +42,8 @@ const App = () => {
           v{version || '...'}
         </footer>
       </aside>
-      <main className="flex flex-1 flex-col items-center justify-center gap-3">
-        //add style to the webSurface, I need it to be in line with the sidebar, so it just occupy the space from the main tag 
+      <main className="relative flex flex-1">
+        {/* The BrowserView is positioned behind this placeholder */}
         <WebSurface url="https://www.google.com" paddingTop={48} paddingLeft={260} className="absolute inset-0" />
       </main>
     </div>

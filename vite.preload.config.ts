@@ -13,7 +13,7 @@ export default defineConfig({
     emptyOutDir: false,
     lib: {
       entry: path.resolve(__dirname, 'src/preload/index.ts'),
-      formats: ['cjs'],
+      formats: ['es'],
       fileName: () => 'index.js',
     },
     rollupOptions: {

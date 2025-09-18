@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "types": ["node", "@electron-forge/plugin-vite/forge-vite-env"],
+    "skipLibCheck": true
+  },
+  "include": [
+    "forge.config.ts",
+    "vite.main.config.ts",
+    "vite.preload.config.ts",
+    "src/main/**/*.ts",
+    "src/preload/**/*.ts",
+    "src/types/**/*.d.ts"
+  ]
+}

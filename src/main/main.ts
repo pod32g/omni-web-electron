@@ -114,7 +114,7 @@ app.whenReady().then(() => {
       if (mainWindow) {
         mainWindow.removeBrowserView(webview);
       }
-      (webview.webContents as any).destroy();
+      webview.webContents.destroy();
       webviews.delete(id);
     }
   });

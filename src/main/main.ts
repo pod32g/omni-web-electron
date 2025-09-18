@@ -1,12 +1,16 @@
 /// <reference types="@electron-forge/plugin-vite/forge-vite-env" />
 
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, BrowserView } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import squirrelStartup from 'electron-squirrel-startup';
 
+const RESERVED = { header: 48, sidebar: 260 };
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Store webview instances
+const webviews = new Map<string, BrowserView>();
 
 if (process.platform === 'win32') {
   app.setAppUserModelId(app.getName());
@@ -14,6 +18,20 @@ if (process.platform === 'win32') {
 
 if (squirrelStartup) {
   app.quit();
+}
+
+function layoutAll(mainWindow: BrowserWindow) {
+  const b = mainWindow.getBounds();
+  const rect = {
+    x: RESERVED.sidebar,
+    y: RESERVED.header,
+    width: Math.max(200, b.width - RESERVED.sidebar),
+    height: Math.max(200, b.height - RESERVED.header),
+  };
+  webviews.forEach((v) => {
+    v.setBounds(rect);
+    v.setAutoResize({ width: true, height: true });
+  });
 }
 
 const createWindow = async () => {
@@ -55,6 +73,51 @@ const createWindow = async () => {
 
 app.whenReady().then(() => {
   ipcMain.handle('app:get-version', () => app.getVersion());
+  
+  // Webview handlers
+  ipcMain.handle('view:create', async (event, { id, partition }: { id: string; partition?: string }) => {
+    const mainWindow = BrowserWindow.fromWebContents(event.sender);
+    if (!mainWindow) return;
+    
+    const webview = new BrowserView({
+      webPreferences: {
+        partition: partition || 'default',
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+      },
+    });
+    
+    webviews.set(id, webview);
+    mainWindow.addBrowserView(webview);
+    layoutAll(mainWindow);
+  });
+  
+  ipcMain.handle('view:load', async (event, { id, url }: { id: string; url: string }) => {
+    const webview = webviews.get(id);
+    if (webview) {
+      await webview.webContents.loadURL(url);
+    }
+  });
+  
+  ipcMain.on('view:set-bounds', (event, { id, bounds }: { id: string; bounds: { x: number; y: number; width: number; height: number } }) => {
+    const webview = webviews.get(id);
+    if (webview) {
+      webview.setBounds(bounds);
+    }
+  });
+  
+  ipcMain.handle('view:destroy', async (event, { id }: { id: string }) => {
+    const webview = webviews.get(id);
+    if (webview) {
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      if (mainWindow) {
+        mainWindow.removeBrowserView(webview);
+      }
+      (webview.webContents as any).destroy();
+      webviews.delete(id);
+    }
+  });
 
   createWindow().catch((error) => {
     console.error('Failed to create window', error);
@@ -76,4 +139,8 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   ipcMain.removeHandler('app:get-version');
+  ipcMain.removeHandler('view:create');
+  ipcMain.removeHandler('view:load');
+  ipcMain.removeHandler('view:destroy');
+  ipcMain.removeAllListeners('view:set-bounds');
 });

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import WebSurface from './components/WebSurface';
 
 const SidebarItem = ({ label }: { label: string }) => (
   <button
@@ -35,17 +36,15 @@ const App = () => {
         <nav className="flex flex-col gap-2">
           <SidebarItem label="Dashboard" />
           <SidebarItem label="Settings" />
+          <SidebarItem label="These shall be the tabs" />
         </nav>
         <footer className="mt-auto text-xs text-slate-500">
           v{version || '...'}
         </footer>
       </aside>
       <main className="flex flex-1 flex-col items-center justify-center gap-3">
-        <h2 className="text-2xl font-semibold">Ready to build</h2>
-        <p className="max-w-md text-center text-sm text-slate-400">
-          The scaffold is configured with Electron, Vite, React, and Tailwind CSS.
-          Use the secure preload bridge to talk to the main process.
-        </p>
+        //add style to the webSurface, I need it to be in line with the sidebar, so it just occupy the space from the main tag 
+        <WebSurface url="https://www.google.com" paddingTop={48} paddingLeft={260} className="absolute inset-0" />
       </main>
     </div>
   );

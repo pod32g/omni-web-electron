@@ -13,7 +13,7 @@ export default defineConfig({
     emptyOutDir: false,
     lib: {
       entry: path.resolve(__dirname, 'src/preload/index.ts'),
-      formats: ['es'],
+      formats: ['cjs'],
       fileName: () => 'index.js',
     },
     rollupOptions: {
@@ -22,6 +22,11 @@ export default defineConfig({
         ...builtinModules,
         ...builtinModules.map((moduleName) => `node:${moduleName}`),
       ],
+      output: {
+        format: 'cjs',
+        exports: 'named',
+        entryFileNames: 'index.js',
+      },
     },
   },
 });
